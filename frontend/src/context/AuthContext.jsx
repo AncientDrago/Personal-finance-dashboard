@@ -1,28 +1,20 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import API from '../services/api';
+import { getMe } from '../services/api';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('user');
-    return stored ? JSON.parse(stored) : null;
-  });
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      API.get('/auth/me')
-        .then((res) => {
-          const userData = res.data.user;
-          setUser(userData);
-          localStorage.setItem('user', JSON.stringify(userData));
-        })
+      getMe()
+        .then((res) => setUser(res.data.data))
         .catch(() => {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
-          setUser(null);
         })
         .finally(() => setLoading(false));
     } else {
